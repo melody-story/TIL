@@ -1,0 +1,22 @@
+name: Send TIL to main Slack API
+
+on:
+  push:
+    branches:
+      - main
+
+  # pull_request:
+  #   branches:
+  #     - main
+  #github action에서 수동으로 돌릴 수 있음
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Send TIL to Slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy my app
+        run: |
+          bash sendToSlack.sh ${{ secrets.SLACK_WEBHOOK_URL }} ${{ secrets.AUTHOR_NAME }}
