@@ -30,7 +30,7 @@ curl --location ${tempURL} \
           "author_name": "'"$AUTHOR_NAME"'",
           "author_link": "https://github.com/melody-story",
           "title": "'"$TITLE"'",
-          "title_link": "https://github.com/kmelody-story/TIL/daily_log/'"$DIR"'/'"$TITLE"'",
+          "title_link": "https://github.com/melody-story/TIL/daily_log/'"$DIR"'/'"$TITLE"'",
           "text": "'"$CONTENT"'",
       }
   ]
