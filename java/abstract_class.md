@@ -47,6 +47,6 @@ public class MemberManagerImpl2 extends MemberMangerAbstract{
 | 구현 안 된 메소드 포함 가능 여부 | 가능(필수)    | 가능             | 불가     |
 | 구현 된 메소드 포함 가능 여부   | 불가        | 가능             | 가능(필수) |
 | static 메소드 선언 가능 여부 | 불가        | 가능             | 가능     |
-| static 메소드 선언 가능 여부 | 불가        | 가능             | 가능     |
-| static 메소드 선언 가능 여부 | 불가        | 가능             | 가능     |
-| static 메소드 선언 가능 여부 | 가능        | 불가             | 불가     |
+| final 메소드 선언 가능 여부 | 불가        | 가능             | 가능     |
+| 상속(extends) 가능 | 불가        | 가능             | 가능     |
+| 구현(implements) 가능 | 가능        | 불가             | 불가     |
