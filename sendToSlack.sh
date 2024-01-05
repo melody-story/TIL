@@ -9,10 +9,10 @@ DIR="Y${CURRENT_MONTH}"
 echo $DIR
 
 ## 적절한 경로에 해당 데일리 로그가 있는지 확인
-if [ ! -f "./daily_log/"$DIR"/"$TITLE ]; then
-    echo "Error: '"$TITLE"' not found"
-    exit 1  # Exit with status code 1 indicating an error
-fi
+#if [ ! -f "./daily_log/"$DIR"/"$TITLE ]; then
+#    echo "Error: '"$TITLE"' not found"
+#    exit 1  # Exit with status code 1 indicating an error
+#fi
 
 # 해당 slack url에 POST 요청 보내기
 tempURL=$1
@@ -30,7 +30,7 @@ curl --location ${tempURL} \
           "author_name": "'"$AUTHOR_NAME"'",
           "author_link": "https://github.com/melody-story",
           "title": "'"$TITLE"'",
-          "title_link": "https://github.com/melody-story/blob/main/TIL/daily_log/'"$DIR"'/'"$TITLE"'",
+          "title_link": "https://github.com/melody-story/TIL/blob/main/daily_log/'"$DIR"'/'"$TITLE"'",
           "text": "'"$CONTENT"'",
       }
   ]
