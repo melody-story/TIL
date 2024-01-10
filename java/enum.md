@@ -147,3 +147,30 @@ public class OverTimeManager2 {
 | ordinal()                               | 상수의 순서를 리턴                                                                                                                    |
 | valueOf(Class<T> enumType, String name) | static 메소드. 첫번째 개변수로 클래스 타입의 enum을, 두번째 매개변수로는 상수의 이름을 넘겨주면 된다.                                                               |
 | values()                                | 클래스에 선언되어있는 모든 상수를 배열로 리턴                                                                                                     |
+
+
+
+## Enum과 메모리 구조
+JAVA에서 열거 상수는 상수 각각을 내부적으로 public static final 필드이면서 객체로 제공되도록 합니다. static이 붙어있기 때문에 각각의 상수는 클래스변수로 클래스로더가 로드 시점에 JVM Method영역에 해당 클래스 변수들을 항상 상주시켜 프로그램이 종료되기 전에는 언제든지 가져다 쓸 수 있는 주소공간을 확보합니다.
+![enum_memory1](./img/enum_memory1.png)
+
+## Enum과 메모리 초기화
+```java
+Week today = Week.MONDAY;
+```
+이제는 사용 부를 살펴보겠습니다. 사용 부에서는 클래스의 인스턴스를 생성하는 것과 비슷하지만, new가 없는 형태입니다.
+어떤 클래스에서든 해당 로직을 만나면 Heap영역에 Week 객체는 MONDAY부터 SUNDAY까지 각각 java.lang.Enum클래스를 상속받는 고유의 객체가 만들어지고 Method 영역의 열거상수들은 해당 Heap영역에 생성된 객체를 바라봅니다. 즉 로직을 만나는 순간 이전에 Method에 할당되었던 메모리에 Heap영역에 생긴 객체들이 할당됩니다.
+
+![enum_memory2](./img/enum_memory2.png)
+
+today변수는 JVM Stack영역에서 사용하므로 stack영역의 today는 Method 영역에 있는 MONDAY의 객체의 주소 값을 복사하므로 today와 Week.MONDAY는 Heap에 생성된 같은 객체를 바라봅니다.
+![enum_memory](./img/enum_memory3.png)
+이러한 이유로 today == Week.SUNDAY 로직이 같은 객체를 반환하므로 true가 성립됩니다. 같은 이유로 아래 코드가 true가 나와도 이해가 됩니다.
+
+```java
+Week thisWeek = Week.SUNDAY;
+Week nextWeek = Week.SUNDAY;
+thisWeek == nextWeek // true
+```
+#### **참고**
+- https://honbabzone.com/java/java-enum/
