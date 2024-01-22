@@ -56,13 +56,16 @@ java. lang 패키지에서 제공하는 `인터페이스`, `클래스`, `예외 
 
 ### java.lang 패키지에 정의되어 있는 "에러"
 
->AbstractMethodError, AssertionError, ClassCircularityError, ClassFormatError, Error, ExceptionInInitializerError,
-llegalAccessError, IncompatibleClassChangeError,
-InstantiationError, InternalError, LinkageError, NoClassDefFoundError, NoSuchFieldError, NoSuchMethodError, Out0fMemoryError, StackOverflowError, ThreadDeath, UnknownError, UnsatisfiedLinkError, UnsupportedClassVersionError, VerifyError, VirtualMachineError
+> AbstractMethodError, AssertionError, ClassCircularityError, ClassFormatError, Error, ExceptionInInitializerError,
+> llegalAccessError, IncompatibleClassChangeError,
+> InstantiationError, InternalError, LinkageError, NoClassDefFoundError, NoSuchFieldError, NoSuchMethodError,
+> Out0fMemoryError, StackOverflowError, ThreadDeath, UnknownError, UnsatisfiedLinkError, UnsupportedClassVersionError,
+> VerifyError, VirtualMachineError
 
-- `OutOfMemoryError(OOME)` : 메모리가 부족하여 발생하는 에러. 자바는 가상 머신에서 메모리를 관리하지만, 프로그 램을 잘못 작성하거나 설정이 제대로 되어 있지 않을 경우에는 이러한 에러가 발생가능 
-- `StackOverflowError` : 호출된 메소드의 깊이가 너무 깊을 때 발생. 자바에서는 스택 Stack 이라는 영역에 어떤 메소드가 어떤 메소드를 호출했는지에 대한 정보를 관리한다. 예를 들어 메소드가 자기 자신을 호출하는 재귀 메소드를 잘못 작성했다면 스택에 쌓을 수 있는 메소드 호출 정보의 한계를 넘어서 발생.
-
+- `OutOfMemoryError(OOME)` : 메모리가 부족하여 발생하는 에러. 자바는 가상 머신에서 메모리를 관리하지만, 프로그 램을 잘못 작성하거나 설정이 제대로 되어 있지 않을 경우에는 이러한 에러가
+  발생가능
+- `StackOverflowError` : 호출된 메소드의 깊이가 너무 깊을 때 발생. 자바에서는 스택 Stack 이라는 영역에 어떤 메소드가 어떤 메소드를 호출했는지에 대한 정보를 관리한다. 예를 들어 메소드가
+  자기 자신을 호출하는 재귀 메소드를 잘못 작성했다면 스택에 쌓을 수 있는 메소드 호출 정보의 한계를 넘어서 발생.
 
 ## 숫자를 처리하는 클래스들
 
@@ -94,7 +97,7 @@ public void numberTypeCheck(){
         Integer refInt1=Integer.valuef(value1);
         Integer refInt2=Integer.valuef(value2); //  valueof() 메소드를 사용하여 Integer 타입으로 변환한
         System.out.println(refInt1+refInt2+"7"); // 두 값을 더한 후 "7"이라는 String을 더하여 출력했다.
-}
+        }
 ````
 
 - 여기서 참조자료형인 Integer가 연산된것에 의문을 품을 수 있다.
@@ -106,7 +109,7 @@ public void numberTypecheck2(){
         Integer refInt1;
         refInt1=100;
         System.out.printIn(refInt1.doubleValue());
-}
+        }
 ```
 
 1. `parse타입이름()` : 기본 자료형을 리턴
@@ -135,7 +138,7 @@ public void numberMinMaxCheck(){
         System.out.printin("Double min="+Double.MIN_VALUE+" max="+Double.MAX _VALUE);
         System.out.printIn("Character min="+(int)Character.MIN _VALUE+" max="
         +(int)Character.MAX_VALUE);
-}
+        }
 ```
 
 - 출력 결과
@@ -161,7 +164,7 @@ public void integerMinMaxCheckBinary(){
         System.out.printIn("Integer BINARY max="+Integer.toBinaryString(Integer.MAX_VALUE));
         System.out.printIn"Integer HEX min="+Integer.toHexstring(Integer.MIN VALUE));
         System.out.printIn("Integer HEX max="+Integer.toHexString(Integer.MAX _VALUE));
-}
+        }
 ```
 
 - 출력 결과
@@ -182,3 +185,40 @@ Integer HEX max=7fffffff
 - 이 외에도 기본 자료형을 참조 자료형으로 만들어 놓은 클래스에는 많은 상수와 메소드들이 있다.
 - 숫자 참조자료형의 메소드는 API문서를 통해 알 수 있다.
     - `java API` : https://docs.oracle.com/javase/7/docs/api/
+
+---
+
+## 코딩 테스트 활용
+
+- 문제
+  : int 타입의 숫자가 주어졌을 때, 숫자의 각자리 곱과 합의 빼기 연산을 구하는 문제이다.
+
+Input: n = 234
+Output: 15
+Explanation:
+Product of digits = 2 * 3 * 4 = 24
+Sum of digits = 2 + 3 + 4 = 9
+Result = 24 - 9 = 15
+
+```java
+class Solution {
+    public int subtractProductAndSum(int n) {
+        String s1 = n + "";
+        int m = 1;
+        int s = 0;
+        for (int i = 0; i < s1.length(); i++) {
+            int c = Character.getNumericValue(s1.charAt(i));
+            m *= c;
+            s += c;
+        }
+        return m - s;
+    }
+}
+```
+
+>단순히 `s1.charAt(i)`을 하여 연산을 하게되면 값이 `1`일때, 문자 1의 아스키 코드 값인, 49로 연산이 된다.
+>따라서, 형변환으로 강제 변환해주어서는 안되고, `Character` 클래스의 `getNumericValue()`함수를 사용하거나,
+>`char c = '1'; int n = c - '0'// 49 - 48;`와 같이 문자 0을 빼주는 방법이 있다.
+>
+> *문자 0~9의 아스키 코드값은 48 ~ 57이다.
+
