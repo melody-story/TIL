@@ -379,7 +379,7 @@ Data
 
 
 ### 제네릭 사용의 예
-- 수강생 종류 별 강좌 수강신청
+1. 수강생 종류 별 강좌 수강신청
 
 ```java
 public class Main {
@@ -420,4 +420,26 @@ public class Main {
 		CourseSystem.printCourse(workerCourse); // 직장인 강좌 수강생 출력
 	}
 }
+```
+
+2. 해당 문자의 순서 구하기
+- `String`, `Integer`, `Long` 등 모두 `Comparable` 인터페이스를 구현한 자료형 
+
+```java
+    public void testGetMax() {
+        System.out.println(getMax(1, 2, 3));
+        System.out.println(getMax(3, 1, 2));
+        System.out.println(getMax(2, 3, 1));
+        System.out.println(getMax("a", "b", "c"));
+        System.out.println(getMax("b", "c", "a"));
+        System.out.println(getMax("a", "b", "c"));
+    }
+        
+    public <T extends Comparable<T>> T getMax (T ... a) {
+        T maxT=a[0];
+        for(T tempT:a) {
+            if (tempT.compareTo(maxT) > 0) maxT = tempT;
+        }
+        return maxT;
+    }
 ```

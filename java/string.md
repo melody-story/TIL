@@ -29,6 +29,10 @@ public final class String extends Object
     - `compareTo()` 라는 메소드 하나만 선언됨.
         - 매개변수로 넘어가는 객체와 현재 객체가 같은지를 비교하는데 사용됨.
         - 객체의 순서를 처리할때 유용 : 리턴타입이 int로, 같으면 0, 다르면 순서상 앞이면 -1, 뒤에있으면 1을 리턴함.(equals()와 다름)
+        - 서로다른 두 문자열이 index 0부터 포함 관계에 있을 경우 문자열 길이의 차이를 반환.
+          - `System.out.println("abc".compareTo("a"));` : `2`
+          - `System.out.println("a".compareTo("abc"));` : `-2`
+          - `System.out.println("abc".compareTo("ce"));` : `-2` -> 같은 인덱스에 해당하는 값이 다른 최초 문자의 순서 차를 반환
     - `<String>` : 제네릭을의미
 - `CharSequence`
     - 해당 클래스가 문자열을 다루기 위한 클래스라는 것을 명시적으로 나타내는데 사용됨.
