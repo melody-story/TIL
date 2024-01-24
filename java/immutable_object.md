@@ -2,6 +2,12 @@
 
 ### 불변 객체(immutable object) 란?
 
+
+- 불변 객체란 객체가 참조하고 있는 값이 외부에 의해 변형되지 않는 객체
+- 불변 객체를 사용하였을 때 장점은 외부에서 임의로 내부의 값을 제어할 수 없기 때문에
+  객체의 `자율성`이 보장되고 프로그램 내에서 변하지 않는 즉 고정된 부분이 많아짐으로써 프로그램 `안정도`를 높일 수 있습니다.
+- 불변 객체는 가리키고 있는 주솟값 그리고 힙 영역에 있는 데이터 **그 자체** 가 변경되지 않는 것을 의미
+
 - 객체 지향 프로그래밍에 있어서 불변객체(immutable object)는 생성 후 그 `상태`를 바꿀 수 없는 객체를 말한다.
 - 그렇기 때문에 `한 번 생성이 되면 신뢰`할 수 있는 객체가 된다.
 - 가장 대표적인 불변객체로는 String, Integer, Boolean, BigDecimal ...이 있다. 아래의 예제는 String을 예로 들었다.
@@ -35,5 +41,20 @@ String은 참조변수이기 때문에 메모리 상 heap영역에 저장이 된
 ## 불변 객체를 어떻게 만드는가?
 
 1. setter를 사용하지 않는다. (객체의 상태를 변경하는 메소드 미제공)
-2. 변수를 `private`으로 선언한다.
-3. 변수를 `final`로 선언한다.
+2. 변수를 `private`으로 선언한다. : 클래스 외부에서 접근 불가
+3. 변수를 `final`로 선언한다. : 객체의 상태 최초 1번만 초기화
+4. 그리고 `Collections`클래스의 `unmodifiableList` 메소드 사용
+
+```java
+public class Cars {
+  private final List<Car> cars;
+
+  public Cars(List<Car> cars) {
+    this.cars = new ArrayList<>(cars);
+  }
+
+  public List<Car> getCars() {
+    return Collections.unmodifiableList(cars);
+  }
+}
+```
