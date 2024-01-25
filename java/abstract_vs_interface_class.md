@@ -1,4 +1,8 @@
-Interface vs Abstract Class
+# Interface vs Abstract Class
+
+- 추상클래스는 상속을 위한 클래스. 상속, 확장하여 사용하기 위한 것입니다. new 키워드를 통해 직접 객체를 생성할 수 없다.
+- 인터페이스는 해당 인터페이스를 구현한 객체들에 대한 동일한 사용방법과 동작을 보장하기 위해 사용한다.
+
 Interface와 Abstract Class는 상속(extends)받거나, 구현(implements)하는 Class가 Interface나 Abstract Class 안에 있는 Abstract Method를
 구현하도록 강제하는 공통점을 가지고 있다.
 

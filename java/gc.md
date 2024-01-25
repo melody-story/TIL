@@ -21,6 +21,7 @@
 - `GC 튜닝`이란, 이` Stop-the-world의 시간을 줄이는 것`이다.
 
 ### Generational GCs
+![java_hotspot_vm](./img/java_hotspot_vm.png)
 
 ![gc_heap](./img/gc_heap.png)
 
@@ -34,6 +35,9 @@
 
 ### Hotspot Heap Structure
 
+
+![heap_area](./img/heap_area.webp)
+
 - Young :  젊은 객체들이 존재
     - Eden : 객체를 생성하자마자 저장되는 장소
     - Survivor : 한번의 Minor GC를 경험한 객체들이 저장되는 곳(두개의 공간이 존재)
@@ -41,6 +45,19 @@
         - Survivor2
 - Old : 늙은 객체들이 존재
 - Perm : 클래스나 메소드에 대한 정보가 쌓임. Code가 모두 로딩되고 나면 거의 일정한 수치를 유지.
+
+>generational gc의 핵심은 대부분의 객체는 생명이 짧다에 근거합니다.
+>실제로 우리가 만드는 웹페이지를 보면 dbms에서 데이터를 가져다가 vo로 만들어 display 하고 vo의 역할이 끝납니다. 
+>즉 많은 수의 객체가 request 시마다 생성되고 소비되고 바로 생명이 끝납니다.
+>그 반면에 servlet 같이 프로세스 내내 살아있는 객체도 있습니다.
+>- generational gc 는 객체가 생성되면 eden 영역에 적재가 됩니다. 
+>- eden 영역이 일정수준 공간이 차면 살아있는 것만 survivor1 로 옮깁니다.
+>- 다시 eden 영역이 일정수준 차면 eden 영역의 살아있는 것과 survivor1 의 살아있는 것을 survivor2 로 옮깁니다.(이 상태에서 survivor1 은 덮어써도 되는 상태. 즉 빈상태입니다.)
+>- 다시 eden 영역이 차면 이번엔 eden + survivor2 살아있는 것들을 survivor1 로 옮깁니다. 
+>- 이런식으로 여러번 반복하면(이것을 세대라고 합니다.) 즉 몇세대 반복하면 항상 살아있는 객체가 나옵니다.
+>- 이것들은 servlet 같이 오래 사용되는 것들이라고 판단할 수 있고 
+>- old 영역으로 이동시킬 수 있는 후보가 되고 더 반복되면 old 영역으로 이동하게 됩니다.
+
 
 ### metaspace / permanent generation /
 
@@ -71,9 +88,21 @@
 5. 지속적으로 이동하다가 Old영역이 꽉 차면, GC가 발생
 
 - Young GC가 Full GC 보다 빠르다. 일반적으로 더 작은 공간이 할당되고, 객체들을 처리하는 방식도 다르기 때문.
-- 전체 힙 영역을 영영역으로 만든다면 장애로 이어질 확률이 매우 높아진다.
+- 전체 힙 영역을 영 영역으로 만든다면 장애로 이어질 확률이 매우 높아진다.
 
 Full GC는 속도가 매우 느리고, Full GC가 발생하는 순간, 자바 어플리케이션이 멈춘다. (Stop-the-world). 따라서 Full GC는 성능과 안정성에 아주 큰 영향을 미친다.
+
+
+## GC 동작방식 설명
+
+1. 맨 처음 객체가 생성이 되면 Eden 영역에 생성된다.
+2. Minor GC가 발생하면, 미사용 객체가 제거된다. 또한, 아직 사용되는 것으로 판단되는 객체를 Survivor 1 또는 Survivor 2 영역으로 이동시킨다. 만약, 객체의 크기가 Survivor 영역의 크기보다 크다면 Survivor 영역을 거치지 않고 바로 Old Generation으로 이동시킨다.
+3. Survivor 1과 Survivor 2 영역은 둘 중 한 곳에만 객체가 존재하며 다른 한 곳은 비어져 있어야 한다. 객체가 존재하는 Survivor 영역을 From 이라고 부르자. From 영역이 가득 차면 다른 Survivor 영역으로 객체를 보내게 되고, 기존의 Survivor 영역을 비우게 된다. 이 때 From 영역에서 객체를 받는 Survivor 영역을 To 영역이라고 부른다.
+4. 위의 1 ~ 3 과정을 반복하면서 Survivor 영역에서 계속 살아남는 객체들에 대해 일정한 score가 누적된다. 해당 score가 기준치 이상을 넘은 객체들에 대하여 Old Generation으로 이동시킨다.
+5. Old Generation 영역에서 살아남았던 객체들이 일정 수준으로 쌓이게 되면, 미사용된다고 식별된 객체를 제거하는 Full GC가 발생한다. 이 때 STW(Stop-The-World) 가 발생하게 된다.
+
+
+
 
 ## GC 종류와 동작 방식
 
@@ -167,15 +196,16 @@ Full GC는 속도가 매우 느리고, Full GC가 발생하는 순간, 자바 �
 
 ## GC 의 Garbage 판단 : Reachability
 
-- GC 가 해당 객체가 가비지인지 아닌지 판별하는 방법으로 `Reachability` g라는 개념을 사용한다.
+- GC 가 해당 객체가 가비지인지 아닌지 판별하는 방법으로 `Reachability` 라는 개념을 사용한다.
 - `reachable` : 객체에 유효한 참조가 있음.
 - `unreachable` : 객체에 유효한 참조가 없음. **가비지 컬렉션의 대상.**
 - `root set` : 객체에서 한 객체는 다른 여러 객체를 참조(의존) 하고, 그 객체들은 또 다른 객체를 참조하는 참조 사슬구조를 이루는데, 이런 사슬구조에서 유효한 참조 여부를 결정하기 위해서는 유효한
   최초의 참조가 있어야 한다. 이를 `root set` 이라 한다.
 - `GC Root`가 될 수 있는 대상
-    - JVM 메모리의 Stack 영역에 존재하는 참조 변수
-    - Method Area의 static 데이터
-    - JNI에 의해 생성된 객체들
+    - JVM 메모리의 `Stack 영역`에 존재하는 `참조 변수`
+    - Method Area의 `static 데이터`
+    - `JNI`에 의해 생성된 객체들
+      - `JNI` : 자바코드가 네이티브 응용 프로그램(하드웨어와 운영 체제 플랫폼에 종속된 프로그램들) 그리고 C, C++ 그리고 어셈블리 같은 다른 언어들로 작성된 라이브러리들을 호출하거나 반대로 호출되는 것을 가능하게 하는 프로그래밍 프레임워크
 
 ### Runtime Area 의 구조
 
