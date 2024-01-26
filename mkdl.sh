@@ -20,6 +20,26 @@ fi
 if [ ! -f "./daily_log/"$DIR"/"$TITLE ]; then
     touch "./daily_log/$DIR/$TITLE"
     echo "created: '"$TITLE"' file"
+    echo "Today I Learned "$LOG_NAME""  | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "---" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "### 알고리즘 문제풀이" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "- " | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "### 자바의신 II" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "- " | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "### Q & A" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "- " | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "### 더 알면 좋은 내용" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "- " | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+    echo "" | tee -a  ./daily_log/$DIR/$TITLE > '/dev/null'
+
 fi
 #
 git add "./daily_log/$DIR/$TITLE"
