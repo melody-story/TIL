@@ -1,13 +1,25 @@
-# Annotation
+# Annotation란?
 
-- 클래스나 메소드 등의 선언시에 `@`를 사용하는 것
-- `JDK 5`부터 등장
-- 클래스, 메소드, 변수 등 모든 요소에 선언 가능
+- 어노테이션 자체는 주석과도 같다. (실제로 번역기를 돌려도 주석으로 나온다.) 
+- 즉, 코드 사이에 주석처럼 쓰이면서 특별한 의미, 기능을 수행하도록 하는 기술로 프로그램에게 추가적인 정보를 제공해주는 메타 데이터이다.
 
 ## 사용 목적
-- 컴파일러에게 정보를 알려주기 위해
-- 컴파일할 때와 설치(deployment) 시의 작업을 지정
-- 실행할 때 별도의 처리
+
+- 컴파일러에게 코드 작성 문법 에러를 체크하도록 정보를 제공한다.
+- 소프트웨어 개발툴이 빌드나 배치 시 코드를 자동으로 생성할 수 있도록 정보를 제공한다.
+- 런타임 시 특정 기능을 실행하도록 정보를 제공한다.
+  - **리플렉션(Reflection) API 사용**
+    - 리플렉션을 사용하면 클래스와 메서드의 메타정보를 사용해서 애플리케이션을 동적으로 유연하게 만들 수 있다. 
+    - 하지만 리플렉션 기술은 `런타임`에 동작하기 때문에, 컴파일 시점에 오류를 잡을 수 없다는 단점이 존재한다.
+    - 만일 리플렉션으로 getMethod("메서드명") 를 통해 클래스의 메서드를 가져온다고 가정했을 때 인자로 존재하지도 않는 메서드명을 기재할 경우, 해당 코드를 직접 실행해야 오류가 발생해 미리 대비할수 없게 된다.
+    - 가장 좋은 오류는 개발자가 즉시 확인할 수 있는 컴파일 오류이고, 가장 무서운 오류는 사용자가 직접 실행할 때 발생하는 런타임 오류다. 따라서 리플렉션은 초보자가 일반적으로 사용하는데는 유의해야한다.
+      ![annotation_type](./img/annotation_type.png)
+
+## 특징
+
+- 클래스나 메소드 등의 선언시에 `@`를 사용
+- `JDK 5`부터 등장
+- 클래스, 메소드, 변수 등 모든 요소에 선언 가능
 
 ## 지정된 어노테이션 
 
@@ -163,6 +175,15 @@ public class UserAnnotationSample {
 }
 ```
 
+>- 만일 구현한 어노테이션에 요소가 하나에 불과하고, 해당 요소명이 `value()`인 경우에는 
+>- 어노테이션 적용시 요소명을 생략하고, 해당 어노테이션의 인자값 자체에 값을 넣어주기만 해도 된다. 
+>
+>```java
+>@UserAnnotation(0);
+>//위와 동일
+>@UserAnnotation(value=0);
+> ```
+
 
 ## 어노테이션에 선언한 값의 확인
 
@@ -252,3 +273,105 @@ annotationSample3() : number=3 text=third
 
 - 이렇게 어노테이션을 사용하면 **개발을 보다 편리하게 할 수 있는 장점**이 존재한다.
 - 어노테이션을 지정하면 코드가 내부적으로 어떻게 변환되는지에 대해서 살펴보는 습관을 가지는 것이 좋다.
+
+---
+
+## 어노테이션 커스텀하기
+
+- 커스텀 어노테이션
+
+```java
+
+import java.lang.annotation.*;
+
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FruitColor {
+enum Color{RED, PURPLE, BLUE, BLACK};
+
+    Color value() default Color.PURPLE;
+}
+
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface FruitName {
+    String value() default "";
+}
+
+
+
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FruitProvider {
+    int id() default -1;
+
+    String name() default "";
+
+    String address() default "";
+}
+
+```
+
+- 커스텀 어노테이션 사용의 예
+  - 어노테이션을 만들 때 `@Retention(RetentionPolicy.RUNTIME)` 속성을 줬기 때문에 `리플렉션(Reflection)`을 사용할 수 있다.
+  - 만약 `@Retention(RetentionPolicy.CLASS)` 속성을 줬다면, `리플렉션(Reflection)`을 사용할 수 없다.
+  ![annotation_type](./img/annotation_type.png)
+
+```java
+import config.TestConfigure;
+import org.junit.Test;
+
+import java.lang.reflect.Field;
+
+
+public class Annotation extends TestConfigure {
+
+    @Test
+    public static void main(String[] args) {
+        getFruitInfo(Apple.class);
+
+    }
+    static class Apple {
+        @FruitName("Apple")
+        private String appleName;
+
+        @FruitColor(FruitColor.Color.PURPLE)
+        private String appleColor;
+
+        @FruitProvider(id = 1,name = "HomePlus",address="Seoul")
+        private String appleProvider;
+    }
+
+    public static void getFruitInfo(Class<?> clazz) {
+
+        String strFruitName = " 과일 이름 :";
+        String strFruitColor = " 과일 색 :";
+        String strFruitProvider = "과일 파는 곳";
+
+        Field[] fields = clazz.getDeclaredFields();
+
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(FruitName.class)) {
+                FruitName fruitName = field.getAnnotation(FruitName.class);
+                strFruitName = strFruitName + fruitName.value();
+                System.out.println(strFruitName);
+            } else if (field.isAnnotationPresent(FruitColor.class)) {
+                FruitColor fruitColor = field.getAnnotation(FruitColor.class);
+                strFruitColor = strFruitColor + fruitColor.value().toString();
+                System.out.println(strFruitColor);
+            } else if (field.isAnnotationPresent(FruitProvider.class)) {
+                FruitProvider fruitProvider = field.getAnnotation(FruitProvider.class);
+                strFruitProvider = " 과일 파는 곳의 ID: " + fruitProvider.id() + " 지점 이름 : " + fruitProvider.name() + " 지점 주소: " + fruitProvider.address();
+                System.out.println(strFruitProvider);
+            }
+        }
+    }
+
+
+}
+
+```
