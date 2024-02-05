@@ -600,3 +600,412 @@ public void minus(int value){
 >결론적으로 필요에 따라 적절한 클래스를 선택하여 사용하는 것도 매우 중요하다.<br>
 >API 문서를 자주 참조하며 개발하자!!
 
+## 쓰레드의 상태를 통제하기 위한 메소드
+
+1. getState()
+
+| 리턴 타입        | 메소드 이름 및 매개 변수               | 설명                                                                          |
+|--------------|------------------------------|-----------------------------------------------------------------------------|
+| Thread.State | getState()                   | 쓰레드의 상태 확인한다.                                                               |
+
+- 리턴타입 Thread.State : 자바의 Thread 클래스에 있는 State라는 enum 클래스를 의미
+  - 선언되어있는 상수 목록
+   
+  | 상태            | 의미                                                 |
+  |---------------|----------------------------------------------------|
+  | NEW           | 쓰레드 객체는 생성되었지만, 아직 시작되지는 않은 상태                     | 
+  | RUNNABLE      | 쓰레드가 실행중인 상태                                       | 
+  | BLOCKED       | 쓰레드가 실행 중지 상태이며, 모니터 락(monitor lock)이 풀리기를 기다리는 상태 |  
+  | WAITING       | 쓰레드가 대기중인 상태                                       | 
+  | TIMED WAITING | 특정 시간만큼 쓰레드가 대기중인 상태                               | 
+  | TERMINATED    | 쓰레드가 종료된 상태                                        | 
+  - 위 상수들은 `public static`으로 선언되어 있다. `Thread.State.NEW`와 같이 사용 가능
+  
+- 쓰레드 상태
+  -  어떤 쓰레드이건 간에 `NEW` - 그밖의 상태 - `TERMINATED`의 라이프 사이클을 가진다.
+![thread_state_diagram](./img/thread_state_diagram.png)
+
+
+2. join()
+- 해당 쓰레드가 종료될 때까지 기다린다.
+- 원하는 대기시간 만큼을 매개변수에 지정. 
+  - `0.002000003초 -> thread.join(2,3);`
+  - 모든 매개변수는 양수여야하며, 두번째 매개변수는 0 ~ 999,999까지만 지정
+    - `IllegalArgumentException` 예외 발생
+
+| 리턴 타입        | 메소드 이름 및 매개 변수               | 설명                                                                          |
+|--------------|------------------------------|-----------------------------------------------------------------------------|
+| void         | join()                       | 수행중인 쓰레드가 중지할 때까지 대기한다.                                                     | 
+| void         | join(long millis)            | 매개 변수에 지정된 시간만큼(1/1,000초) 대기한다.                                             | 
+| void         | join(long millis, int nanos) | 첫 번째 매개 변수에 지정된 시간(1/1,000초)+두 번 째 매개 변수에 지정된 시간(1/1,000,000,000초)만 큼 대기한다. |
+
+
+3. interrupt()
+- `InterruptedException`을 발생시키면서 현재 수행중인 쓰레드를 중단 시킨다.
+- Thread 클래스의 sleep()와 join() 메소드, Object 클래스의 wait() 메소드같이 `대기(waiting)`상태를 만드는 메소드가 호출되었을 때에는 interrupt() 메소드를 호출할 수 있다.
+
+>만약 쓰레드가 시작하기 전이나, 종료된 상태에 interrupt() 메소드를 호출하면 어떻게 될까?<br>
+>=> 예외나 에러 없이 그냥 다음 문장으로 넘어간다.
+
+| 리턴 타입        | 메소드 이름 및 매개 변수               | 설명                                                                          |
+|--------------|------------------------------|-----------------------------------------------------------------------------|
+| void         | interrupt()                  | 수행중인 쓰레드에 중지 요청을 한다.                                                        | 
+
+4. stop()
+- 안전상의 이유로 deprecated 되었으며 사용해서는 안된다.
+- interrupt() 메소드를 사용하여 쓰레드를 멈추어야 한다.
+
+
+
+### 메소드 사용 예제 - 지정 시간만큼 대기하는 쓰레드
+
+```java
+package e.thread.support;
+
+public class SleepThread extends Thread {
+    long sleepTime;
+    public sleepThread(long sleepTime) {
+		this.sleepTime = sleepTime;
+	}
+    public void run() {
+        try {
+            System.out.println("Sleeping " + getName());
+			Thread.sleep(sleepTime);
+            System.out.println("Stopping " + getName());
+		} catch (InterruptedException ie) {
+        	ie.printstackTrace();
+        }
+    }
+}
+```
+
+```java
+package e.thread.support;
+
+public class RunSupportThreads {
+    public static void main(String args[]) {
+    	RunSupportThreads sample = new RunSupportThreads();
+    	sample.checkThreadState1();
+    }
+    public void checkThreadState1() {
+        SleepThread thread = new SleepThread(2000);
+        try {
+            System.out.println("thread state=" + thread.getState());
+            thread.start();
+            System.out.println("thread state(after start)=" + thread.getState());
+            
+			Thread.sleep(1000); // 쓰레드가 시작하고 1초 동안 대기한 후 상태를 출력하도록 함
+            System.out.println("thread state(after 1 sec)=" + thread.getState()); 
+            
+			thread.join();      // 메소드가 끝날 때까지 기다리도록 한다.
+            thread.interrupt(); // 쓰레드가 종료된 이후에 interrupt() 메소드를 호출
+            System.out.println("thread state(after join)=" + thread.getState());
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
+    }
+}
+```
+- 결과 출력
+
+```shell
+thread state=NEW
+thread state(after start)=RUNNABLE
+Sleeping Thread-0
+thread state(after 1 sec)=TIMED_WAITING
+Stopping Thread-O
+thread state(after join)=TERMINATED
+```
+
+
+- join()에 매개변수지정하였을 때
+  ```java
+  public void checkJoin() {
+      SleepThread thread = new SleepThread(2000);
+      try {
+      	thread.start(); // thread가 2초간 대기
+      	thread.join(500); // checkJoin가 0.5초 대기로 대기시간이 더 짧은 상태에서 thread가 `대기`상태이다.
+      	thread.interrupt(); // 쓰레드 수행 중지
+      	System.out.println("thread state(after join)=" + thread.getState());
+      } catch (InterruptedException ie) {
+      	ie.printStackTrace();
+      }
+  }
+  ```
+  - 출력
+  ```shell
+  java.lang.InterruptedException: sleep interrupted
+  thread state(after join)=TIMED _WAITING
+    at java.lang.Thread.sleep(Native Method)
+    at e.thread.support.SleepThread.run(SleepThread.java:11)
+  ```
+> 만약 `thread.join(5000);`이었다면, 이미 thread가 실행후 중지 된 상태이므로 `thread.interrupt();` 시 아무런 일도 일어나지 않으므로 아래와 같은 결과가 출력된다.
+>```java
+>Sleeping Thread-0
+>Stopping Thread-0
+>thread state(after join)=TERMINATED
+>```
+
+
+## 쓰레드의 상태를 확인하기 위한 메소드
+
+- interrunted() 메소드는 `본인의 쓰레드`를 확인할 때 사용
+- isInterupted() 메소드는 `다른 쓰레드`에서 확인할 때 사용
+
+| 리턴 타입          | 메소드 이름 및 매개 변수   | 설명                                                                                       |
+|----------------|------------------|------------------------------------------------------------------------------------------|
+| void           | checkAccess()    | 현재 수행중인 쓰레드가 해당 쓰레드를 수정할 수 있는 권한이 있는지를 확인한다. 만약 권한이 없다면 `SecurityException`이라는 예외를 발생시킨다. |
+| boolean        | isAlive()        | 쓰레드가 살아 있는지를 확인한다. 해당 쓰레드의 run() 메소드가 종료되었는지 안되었는지를 확인하는 것이다.                            |
+| boolean        | isInterrupted()  | run() 메소드가 정상적으로 종료되지 않고, Interrupt() 메소드의 호출을 통해서 종료되었는지를 확인하는 데 사용한다.                  |
+| static boolean | interrupted()    | static 메소드로 현재 쓰레드가 중지되었는지를 확인한다.                                                        |
+
+- JVM에서 사용되는 쓰레드의 상태들을 확인하기 위해서는 Thread 클래스의 Static 메소드들을 알아야만 한다.
+  - 주요 static 메소드
+  
+  | 리턴 타입         | 메소드 이름 및 매개 변수      | 설명                                             |
+  |------------------|---------------------|------------------------------------------------|
+  | static int       | activeCount()       | 현재 쓰레드가 속한 `쓰레드그룹`의 쓰레드 중 `살아있는 쓰레드의 개수`를 리턴한다.   |
+  | static Thread    | currentThread()     | `현재 수행중인 쓰레드의 객체`를 리턴한다.                         |
+  | static void      | dumpStack()         | 콘솔 창에 `현재 쓰레드의 스택 정보`를 출력한다.                     |
+
+
+## Object 클래스에 선언된 쓰레드와 관련있는 메소드
+
+| 리턴 타입 | 메소드 이름 및 매개 변수                 | 설명                                                                                                                                                               |                                                                                     
+|-------|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| void  | wait()                         | 다른 쓰레드가 Object 객체에 대한 notify() 메소드나 notifyAll() 메소드를 호출할 때까지 현재 쓰레드가 대기하고 있도록 한다.                                                                              
+| void  | wait(long timeout)             | wait() 메소드와 동일한 기능을 제공하며, 매개 변수에 지정한 시간만큼만 대기한다. 즉, 매개 변수 시간을 넘어섰을 때에는 현재 쓰레드는 다시 깨어난다. 여기서의 시간은 밀리초로 1/1,000초 단위다. 만약 1초간 기다리게 할 경우에는 1000을 매개 변수로 넘겨주면 된다.  
+| void  | wait(long timeout, int nanos)  | wait() 메소드와 동일한 기능을 제공한다. 하지만, wait(timeout)에서 밀리초 단위의 대기 시간을 기다린다면, 이 메소드는 보다 자세한 밀리초 + 나노초 (1/1,000,000.000초) 만큼만 대기한다. 뒤에 있는 나노초의 값은 0~999,999 사이의 값만 지정할 수 있다. 
+| void  | notify()                       | Object 객체의 모니터에 대기하고 있는 단일 쓰레드를 깨운다.                                                                                                                             
+| void  | notifyAll()                    | Object 객체의 모니터에 대기하고 있는 모든 쓰레드를 깨운다.                                                                                                                                   
+
+```java
+package e.thread.object;
+
+public class StateThread extends Thread {
+    private Object monitor;
+    public StateThread(Object monitor) {
+		this.monitor = monitor;
+	}
+    
+	public void run() {
+		try {
+			for (int loop=0; loop < 10000; loop++) {
+				String a="A";
+			}
+			synchronized(monitor) {
+				monitor.wait();
+			}
+			System.out.println(getName() + " is notified.");
+			Thread.sleep(1000);
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+	}
+}
+
+```
+
+- 실행코드
+
+```java
+package e.thread.object;
+public class RunObjectThreads {
+    public static void main(String args[]) {
+        RunObjectThreads sample = new RunObjectThreads();
+        sample.checkThreadState2();
+    }
+	
+    public void checkThreadState2() {
+		Object monitor = new Object();
+		StateThread thread = new StateThread(monitor);
+		try {
+			System.out.println("thread state=" + thread.getState());
+			thread.start();
+			System.out.println("thread state(after start)=" + thread.getState());
+
+			Thread.sleep(100);
+			System.out.println("thread state(after 0.1 sec)=" + thread.getState());
+
+			synchronized (monitor) {
+				monitor.notify();
+			}
+			Thread.sleep(100);
+			System.out.println("thread state(after notify)=" + thread.getState());
+
+			thread.join();
+			System.out.println("thread state(after join)=" + thread.getState());
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+	}
+}
+```
+- 실행 결과
+```shell
+thread state=NEW
+thread state(after start)=RUNNABLE 
+thread state (after 0.1 sec)=WAITING
+Thread-0 is notified.
+thread state(after notify)=TIMED _WAITING
+thread state(after join)=TERMINATED
+```
+>interrupt() 메소드를 호출하여 대기 상태에서 풀려날 수도 있겠지만, 
+>notify() 메소드를 호출해서 풀어야 `InterruptedException`도 발생하지 않고, 
+>wait() 이후의 문장도 정상적으로 수행하게 된다.
+
+
+
+- 무한정 wait()가 생길때 푸는 법
+
+```java
+package e.thread.object;
+public class RunObjectThreads {
+    public static void main(String args[]) {
+        RunObjectThreads sample = new RunObjectThreads();
+        sample.checkThreadState2();
+    }
+	
+    public void checkThreadState3() {
+		Object monitor = new Object();
+		StateThread thread = new StateThread(monitor);
+		StateThread thread2 = new StateThread(monitor); //  추가
+		
+		try {
+			System.out.println("thread state=" + thread.getState());
+			thread.start();
+			System.out.println("thread state(after start)=" + thread.getState());
+
+			Thread.sleep(100);
+			System.out.println("thread state(after 0.1 sec)=" + thread.getState());
+
+			synchronized (monitor) {
+				monitor.notify(); // 먼저 대기하고 있는 쓰레드의 대기만 풀어준다.
+			}
+			Thread.sleep(100);
+			System.out.println("thread state(after notify)=" + thread.getState());
+
+			thread.join();
+			System.out.println("thread state(after join)=" + thread.getState());
+			thread2.join(); //  추가
+			System.out.println("thread2 state(after join)=" + thread2.getState()); //  추가
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+	}
+}
+```
+- 실행 결과
+  ```shell
+  thread state=NEW
+  thread state(after start)=RUNNABLE 
+  thread state(after 0.1 sec)=WAITING
+  Thread-0 is notified.
+  thread state(after notify)=TIMED_WAITING 
+  thread state(after join)=TERMINATED
+  ```
+  - thread2의 결과가 찍히지 않은것을 볼 수있다. notify()는먼저 대기하고 있는 것을 풀어준다. 따라서 notify()를 한줄 더 추가하거나, notifyAll() 메소드를 사용하여 다른 쓰레드의 대기도 풀어주도록 한다.
+  ```java
+  synchronized (monitor) {
+    // monitor.notify();
+    // monitor.notify();
+    monitor.notifyAll();
+  }
+  ```
+  - 변경 후 출력결과
+  ```shell
+  thread state=NEW
+  thread state(after start)=RUNNABLE
+  thread state(after 0.1 sec)=WAITIN
+  Thread-0 is notified.
+  Thread-1 is notified.
+  thread state(after notify)=TIMED_WAITING
+  thread state(after join)=TERMINATED
+  thread2 state(after join)=TERMINATED
+  ```
+
+
+## `ThreadGroup`에서 제공하는 메소드들
+
+- ThreadGroup 
+  - 용도가 다른 여러 쓰레드의 관리를 용이하게 하기 위한 클래스
+  - 쓰레드 그룹은 기본적으로 운영체제의 폴더처럼 뻗어나가는 트리 tree 구조를 가진다.
+  - 하나의 그룹이 다른 그룹에 속할 수도 있고, 그 아래에 또 다른 그룹을 포함할 수도 있다.
+
+| 리턴 타입       | 메소드 이름 및 매개 변수                                 | 설명                                                                                                  |
+|-------------|------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| int         | activeCount()                                 | 실행중인 쓰레드의 개수를 리턴한다.                                                                                 |
+| int         | activeGroupCount()                            | 실행중인 쓰레드 그룹의 개수를 리턴한다.                                                                              |
+| int         | enumerate(Thread[] list)                      | 현재 쓰레드 그룹에 있는 모든 쓰레드를 매개 변수 로 넘어온 쓰레드 배열에 담는다.                                                      |
+| int         | enumerate(Thread[] list, boolean recurse)      | 현재 쓰레드 그룹에 있는 모든 쓰레드를 매개 변수 로 넘어온 쓰레드 배열에 담는다. 두 번째 매개 변 수가 true이면 하위에 있는 쓰레드 그룹에 있는 쓰 레드 목록도 포함한다. |
+| int         | enumerate(ThreadGroup[] list)                  | 현재 쓰레드 그룹에 있는 모든 쓰레드 그룹을 매개 변수로 넘어온 쓰레드 그룹 배열에 담는다.                                                 |
+| int         | enumerate(ThreadGroup[] list, boolean recurse) | 현재 쓰레드 그룹에 있는 모든 쓰레드 그룹을 매개 변수로 넘어온 쓰레드 그룹 배열에 담는다. 두 번 째 매개 변수가 true이면 하위에 있는 쓰레드 그룹 목록도 포함한다.     | 
+| String      | getName()                                     | 쓰레드 그룹의 이름을 리턴한다.                                                                                   |
+| ThreadGroup | getParent()                                   | 부모 쓰레드 그룹을 리턴한다.                                                                                    |
+| void        | list()                                         | 쓰레드 그룹의 상세 정보를 출력한다.                                                                                |
+| void        | setDaemon(boolean daemon)                     | 지금 쓰레드 그룹에 속한 쓰레드들을 데몬으로 지 정한다.                                                                     |
+
+
+1. enumerate()
+- 쓰레드 그룹에 있는 모든 쓰레드의 객체를 제대로 담으려면 `activeCount()` 메소드를 통해 현재 실행중인 쓰레드의 개수를 정확히 파악한 후, 
+- 그 개수만큼의 배열을 생성하면 된다.
+
+```java
+package e.thread.group;
+
+import e.thread.support.SleepThread;
+
+public class RunGroupThreads {
+    public static void main(String args[]) {
+		RunGroupThreads sample = new RunGroupThreads();
+		sample.groupThread();
+	}
+    
+	public void groupThread() {
+        try {
+	    	SleepThread sleep1 = new SleepThread(5000);
+	    	SleepThread sleep2 = new SleepThread(5000);
+			
+	    	ThreadGroup group = new ThreadGroup("Group1");
+	    	Thread thread1 = new Thread(group, sleep1);
+	    	Thread thread2 = new Thread(group, sleep2);
+			
+	    	thread1.start();
+	    	thread2.start();
+	    	Thread.sleep(1000);
+	    	System.out.println("Group name=" + group.getName());
+			int activeCount = group.activeCount();
+	    	System.out.println("Active count=" + activeCount);
+	    	group.list();
+			
+	    	Thread[] tempThreadList = new Thread[activeCount];
+	    	int result = group.enumerate(tempThreadList);
+	    	System.out.println("Enumerate result=" + result);
+	    	for (Thread thread : tempThreadList) {
+	    		System.out.println(thread);
+	    	}
+	    } catch (Exception e) {
+            e.printStackTrace();
+	    }
+	}
+}
+```
+- 실행 결과
+
+```java
+Sleeping Thread-0
+Sleeping Thread-1
+Group name=Group1
+Active count=2
+java.lang.ThreadGroup[name-Group1,maxpri=10]
+    Thread[Thread-2,5,Group1]
+    Thread[Thread-3,5,Group1]
+Enumerate result=2
+Thread[Thread-2,5,Group1]
+Thread[Thread-3,5,Group1]
+Stopping Thread-0
+Stopping Thread-1
+```
+
+## 더 알면 좋은 내용
+- Thread에 있는 `ThreadLocal`이라는 클래스와 `volatile` 예약어
