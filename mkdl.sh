@@ -11,6 +11,7 @@ echo $CURRENT_PATH
 
 #git remote update
 git checkout feature/dailyLog
+git rebase main
 
 if [ ! -d "./daily_log/"$DIR ]; then
     mkdir "./daily_log/$DIR"
