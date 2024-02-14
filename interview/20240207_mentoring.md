@@ -5,17 +5,16 @@
 - 기술스택
     - [x] 프로젝트 기술스택 21로 수정 - 마지막 LTS
     - [x] Object Storage 로 변경
-    - 프로젝트의 기술 스택 선택 기준은 무엇인가요?
-    - Spring boot 버전 정하기
-    - 빌드와 배포 툴 결정
-    - Mysql 버전 정하기
+    - [x] Spring boot 버전 정하기
+    - [x] 빌드와 배포 툴 결정
+    - [x] Mysql 버전 정하기
 - ERD
     - [x] 멤버 아이디 -> spaceUser로 변경
     - [x] 수정자, 생성자, String 타입으로 변경
     - dbdiagram으로 ERD 다시 작성해보기
-    - db column snake case로 수정, 타입 수정하기
-    - audit column 기본적으로 넣기(is_deleted 등)
-    - 이력 관리
+    - [x] db column snake case로 수정, 타입 수정하기
+    - [x] audit column 기본적으로 넣기(is_deleted 등)
+    - [x] 이력 관리
         - delete 이력 관리는 필요있는 것만
 
 ## 공부할내용
