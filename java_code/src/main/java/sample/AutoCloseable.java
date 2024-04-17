@@ -17,7 +17,8 @@ public class AutoCloseable {
 	 */
 
 	public static void main(String[] args) {
-		try (BufferedReader reader = new BufferedReader(new FileReader("/Users/melody/Documents/MelodyGitHub/TIL/java_src/src/main/java/sample/file/example.txt"))) {
+		try (BufferedReader reader = new BufferedReader(new FileReader(
+			"/Users/melody/Documents/MelodyGitHub/TIL/java_src/src/main/java/sample/file/example.txt"))) {
 			String line = reader.readLine();
 			while (line != null) {
 				System.out.println(line);
@@ -26,7 +27,6 @@ public class AutoCloseable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 
 	}
 
