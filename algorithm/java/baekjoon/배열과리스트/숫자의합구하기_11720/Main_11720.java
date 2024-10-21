@@ -1,4 +1,4 @@
-import java.util.Scanner;
+package 배열과리스트.숫자의합구하기_11720;
 
 /**
  * 
@@ -12,6 +12,9 @@ import java.util.Scanner;
  * n=3
  * 1,3,5
  */
+
+import java.util.Scanner;
+
 public class Main_11720 {
     public static void main_11720(String[] args) {
         Scanner sc = new Scanner(System.in);
