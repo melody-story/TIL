@@ -38,4 +38,7 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store
+.DS_Store.ipynb_checkpoints/
+hsd/4-1/hsd/java/dependency-licenses/
+hsd/4-1/hsd/java/*.jar
+hsd/4-1/hsd/java/kernel.json
