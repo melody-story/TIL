@@ -42,3 +42,4 @@ bin/
 hsd/4-1/hsd/java/dependency-licenses/
 hsd/4-1/hsd/java/*.jar
 hsd/4-1/hsd/java/kernel.json
+.claude/*
