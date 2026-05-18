@@ -51,11 +51,18 @@ def verify_key(key: str | None = Security(api_key_header)) -> str:
 # ────────────────────────────────────────────────────
 @lru_cache(maxsize=500)
 def _fetch_from_public_api(name: str) -> dict:
+    # 공공데이터포털 e약은요 요청 변수 규격
+    #   ServiceKey   : 공공데이터포털 인증키 (URL encoded)
+    #   pageNo       : 페이지번호
+    #   numOfRows    : 한 페이지 결과 수
+    #   itemName     : 제품명
+    #   type         : 응답 형식 (xml/json, default xml)
     params = {
-        'serviceKey': DATA_GO_KR_KEY,
-        'itemName': name,
-        'type': 'json',
-        'numOfRows': 1,
+        'ServiceKey': DATA_GO_KR_KEY,
+        'pageNo'    : 1,
+        'numOfRows' : 3,    # 동명/유사 약품 대비 여유분 확보 후 첫 매칭 사용
+        'itemName'  : name,
+        'type'      : 'json',
     }
     r = httpx.get(UPSTREAM, params=params, timeout=10)
     payload = r.json()
@@ -65,11 +72,14 @@ def _fetch_from_public_api(name: str) -> dict:
         return {}
     item = items[0] if isinstance(items, list) else items
     return {
-        'name'        : item.get('itemName', '') or '',
-        'company'     : item.get('entpName', '') or '',
+        'name'        : (item.get('itemName') or '').strip(),
+        'company'     : (item.get('entpName') or '').strip(),
+        'item_seq'    : (item.get('itemSeq') or '').strip(),
         'efficacy'    : (item.get('efcyQesitm') or '').strip(),
         'usage'       : (item.get('useMethodQesitm') or '').strip(),
+        'warn'        : (item.get('atpnWarnQesitm') or '').strip(),
         'precaution'  : (item.get('atpnQesitm') or '').strip(),
+        'interaction' : (item.get('intrcQesitm') or '').strip(),
         'side_effects': (item.get('seQesitm') or '').strip(),
         'storage'     : (item.get('depositMethodQesitm') or '').strip(),
     }
