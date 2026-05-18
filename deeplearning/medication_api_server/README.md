@@ -38,7 +38,32 @@ curl -H "X-API-Key: 클라이언트키" \
   'http://localhost:8000/api/medication?name=에어클란정'
 ```
 
-## 3. 운영 서버 배포 (systemd + Nginx)
+## 3. Docker 배포 (권장)
+
+```bash
+cd medication_api_server
+
+# 환경 변수 파일 준비
+cp .env.example .env && nano .env
+
+# 빌드 + 실행
+docker compose up -d --build
+
+# 로그 확인
+docker compose logs -f
+
+# 헬스체크
+curl http://localhost:8000/health
+```
+
+업데이트:
+```bash
+git pull && docker compose up -d --build
+```
+
+> Nginx 리버스 프록시는 호스트에서 그대로 사용 (컨테이너는 `127.0.0.1:8000` 만 노출).
+
+## 4. systemd + venv 배포 (Docker 없이)
 
 ```bash
 # 코드 배포
@@ -69,7 +94,7 @@ sudo ln -s /etc/nginx/sites-available/medication-api /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## 4. 엔드포인트
+## 5. 엔드포인트
 
 | Method | Path | 인증 | 설명 |
 |--------|------|------|------|
@@ -98,7 +123,11 @@ sudo nginx -t && sudo systemctl reload nginx
 | 401 | `X-API-Key` 누락 또는 미등록 |
 | 404 | 해당 약품 정보 없음 |
 
-## 5. 클라이언트 키 회전
+## 6. 클라이언트 키 회전
 
-`.env` 의 `CLIENT_API_KEYS` 를 수정한 뒤 `sudo systemctl restart medication-api`.
+`.env` 의 `CLIENT_API_KEYS` 를 수정한 뒤 재시작:
+
+- Docker: `docker compose restart`
+- systemd: `sudo systemctl restart medication-api`
+
 콤마 구분으로 여러 키를 동시에 활성화할 수 있어 무중단 회전이 가능합니다.
